@@ -18,8 +18,11 @@ void FastFood::init()
 	variant = rand() % 5;
 	open = false;
 	
-	sprite.SetImage(App->bitmaps["simtower/fastfood"]);
-	sprite.SetCenter(0, 24);
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/fastfood"]);
+	sprite.setTexture(*t);
+	//sprite.SetImage(App->bitmaps["simtower/fastfood"]);
+	sprite.setOrigin(0, 24);
 	addSprite(&sprite);
 	spriteNeedsUpdate = false;
 	
@@ -46,8 +49,8 @@ void FastFood::updateSprite()
 	spriteNeedsUpdate = false;
 	int index = 3;
 	if (open) index = std::min<int>((int)ceil(people.size() / 5.0), 2);
-	sprite.SetSubRect(sf::IntRect(index*128, variant*24, (index+1)*128, (variant+1)*24));
-	sprite.Resize(128, 24);
+	sprite.setTextureRect(sf::IntRect(index*128, variant*24, (index+1)*128, (variant+1)*24));
+	//sprite.Resize(128, 24);
 }
 
 void FastFood::advance(double dt)

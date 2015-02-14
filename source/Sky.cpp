@@ -17,11 +17,11 @@ Sky::Sky(Game * game) : GameObject(game) {
 	soundCountdown = 0;
 	thunderOverlay = 0;
 	
-	rainSound.SetBuffer(app->sounds["simtower/rain"]);
-	rainSound.SetLoop(true);
-	thunderSound.SetBuffer(app->sounds["simtower/thunder"]);
-	birdsSound.SetBuffer(app->sounds["simtower/birds/day"]);
-	cricketsSound.SetBuffer(app->sounds["simtower/crickets"]);
+	rainSound.setBuffer(app->sounds["simtower/rain"]);
+	rainSound.setLoop(true);
+	thunderSound.setBuffer(app->sounds["simtower/thunder"]);
+	birdsSound.setBuffer(app->sounds["simtower/birds/day"]);
+	cricketsSound.setBuffer(app->sounds["simtower/crickets"]);
 }
 
 void Sky::advance(double dt)
@@ -95,13 +95,13 @@ void Sky::advance(double dt)
 		if (rainyDay && time >= 8 && time < 16) {
 			thunderSound.Play(game);
 			thunderOverlay = 1;
-			duration = thunderSound.GetBuffer()->GetDuration();
+			duration = thunderSound.getBuffer()->getDuration().asSeconds();
 		} else if (time >= 8 && time < 17) {
 			birdsSound.Play(game);
-			duration = birdsSound.GetBuffer()->GetDuration();
+			duration = birdsSound.getBuffer()->getDuration().asSeconds();
 		} else if (time >= 20 || time < 1.5) {
 			cricketsSound.Play(game);
-			duration = cricketsSound.GetBuffer()->GetDuration();
+			duration = cricketsSound.getBuffer()->getDuration().asSeconds();
 		}
 		soundCountdown += Math::randd(duration + 0.5, duration + 10);
 	}
@@ -109,27 +109,29 @@ void Sky::advance(double dt)
 
 void Sky::Render(sf::RenderTarget & target) const
 {
-	sf::FloatRect rect = target.GetView().GetRect();
+	sf::FloatRect rect = target.getView().getViewport();
 	
 	//Draw the sky color.
-	int sky_lower = std::max<int>(floor(-rect.Bottom / 360), -1);
-	int sky_upper = std::min<int>(ceil (-rect.Top    / 360), 11);
+	int sky_lower = std::max<int>(floor(-(rect.top+rect.height) / 360), -1);
+	int sky_upper = std::min<int>(ceil (-rect.top    / 360), 11);
 	
 	Sprite sky;
-	sky.SetImage(app->bitmaps["simtower/sky"]);
+	sf::Texture *t = new sf::Texture(); //// FIXME memory leak
+	t->loadFromImage(app->bitmaps["simtower/sky"]);
+	sky.setTexture(*t);
 	for (int y = sky_lower; y <= sky_upper; y++) {
 		for (int i = 0; i < 2; i++) {
 			if ((i == 0 && progress == 1) || (i == 1 && progress == 0)) continue;
 			
 			int index = (std::min<int>(y + 1, 9) * 6 + (i == 0 ? from : to));
-			sky.SetSubRect(sf::IntRect(index * 32, 0, index * 32 + 32, 360));
-			sky.Resize(32, 360);
-			sky.SetCenter(0, 360);
-			sky.SetColor(sf::Color(255, 255, 255, 255*(i == 0 ? 1-progress : progress)));
+			sky.setTextureRect(sf::IntRect(index * 32, 0, index * 32 + 32, 360));
+			//sky.Resize(32, 360);
+			sky.setOrigin(0, 360);
+			sky.setColor(sf::Color(255, 255, 255, 255*(i == 0 ? 1-progress : progress)));
 			
-			for (int x = floor(rect.Left / 32); x < ceil(rect.Right / 32); x++) {
-				sky.SetPosition(x * 32, -y * 360);
-				target.Draw(sky);
+			for (int x = floor(rect.left / 32); x < ceil((rect.left+rect.width) / 32); x++) {
+				sky.setPosition(x * 32, -y * 360);
+				target.draw(sky);
 				game->drawnSprites++;
 			}
 		}
@@ -138,8 +140,8 @@ void Sky::Render(sf::RenderTarget & target) const
 	//Draw the clouds.
 	Sprite cloud;
 	int2 cloudGrid(250, 100);
-	int2 cmin(floor(rect.Left / cloudGrid.x)-1, floor(-rect.Bottom / cloudGrid.y)-1);
-	int2 cmax(ceil(rect.Right / cloudGrid.x)+1, ceil(-rect.Top / cloudGrid.y)+1);
+	int2 cmin(floor(rect.left / cloudGrid.x) - 1, floor(-(rect.top + rect.height) / cloudGrid.y) - 1);
+	int2 cmax(ceil((rect.left + rect.width) / cloudGrid.x) + 1, ceil(-rect.top / cloudGrid.y) + 1);
 	if (cmin.y < 2) cmin.y = 2;
 	for (int x = cmin.x; x <= cmax.x; x++) {
 		for (int y = cmin.y; y <= cmax.y; y++) {
@@ -161,21 +163,25 @@ void Sky::Render(sf::RenderTarget & target) const
 			
 			char c[128];
 			snprintf(c, 128, "simtower/deco/cloud/%i", abs(variant)%4);
-			cloud.SetImage(app->bitmaps[c]);
-			int w = cloud.GetImage()->GetWidth();
-			int h = cloud.GetImage()->GetHeight() / 4;
+			//cloud.SetImage(app->bitmaps[c]);
+			sf::Texture *t = new sf::Texture();
+			t->loadFromImage(app->bitmaps[c]);
+			cloud.setTexture(*t);
+			int w = cloud.getTexture()->getSize().x;
+			int h = cloud.getTexture()->getSize().y / 4;
 			
 			for (int i = 0; i < 2; i++) {
 				if ((i == 0 && progress == 1) || (i == 1 && progress == 0)) continue;
 				int state = std::min<int>(3, i == 0 ? from : to);
 				
-				cloud.SetSubRect(sf::IntRect(0, state*h, w, (state+1)*h));
-				cloud.Resize(w, h);
-				cloud.SetCenter(w/2, h/2);
-				cloud.SetColor(sf::Color(255, 255, 255, 255*(i == 0 ? 1-progress : progress)));
-				cloud.SetX(position.x);
-				cloud.SetY(position.y);
-				target.Draw(cloud);
+				cloud.setTextureRect(sf::IntRect(0, state*h, w, (state+1)*h));
+				//cloud.Resize(w, h);
+				cloud.setOrigin(w/2, h/2);
+				cloud.setColor(sf::Color(255, 255, 255, 255*(i == 0 ? 1-progress : progress)));
+				cloud.setPosition(position.x, position.y);
+				//cloud.SetX(position.x);
+				//cloud.SetY(position.y);
+				target.draw(cloud);
 				game->drawnSprites++;
 			}
 		}
@@ -184,21 +190,25 @@ void Sky::Render(sf::RenderTarget & target) const
 	//Draw the thunder overlay.
 	if (thunderOverlay > 0) {
 		Sprite s;
-		s.SetSubRect(sf::IntRect(rect.Left, rect.Top, rect.Right, -std::max<int>(sky_lower, 0)*360));
-		s.SetColor(sf::Color(255, 255, 255, 255*thunderOverlay));
-		s.SetPosition(rect.Left, rect.Top);
-		target.Draw(s);
+		s.setTextureRect(sf::IntRect(rect.left, rect.top, (rect.left + rect.width), -std::max<int>(sky_lower, 0) * 360));
+		s.setColor(sf::Color(255, 255, 255, 255*thunderOverlay));
+		s.setPosition(rect.left, rect.top);
+		target.draw(s);
 		game->drawnSprites++;
 	}
 	
 	//Draw the skyline, if in view.
-	if (-rect.Bottom <= 96 && -rect.Top >= 0) {
+	if (-(rect.top+rect.height) <= 96 && -rect.top >= 0) {
 		Sprite city;
-		city.SetImage(app->bitmaps["simtower/deco/skyline"]);
-		city.SetCenter(0, 55);
-		for (int x = floor(rect.Left / 96); x < ceil(rect.Right / 96); x++) {
-			city.SetPosition(x * 96, 0);
-			target.Draw(city);
+		sf::Texture *t = new sf::Texture();
+		t->loadFromImage(app->bitmaps["simtower/deco/skyline"]);
+		city.setTexture(*t);
+
+		//city.SetImage(app->bitmaps["simtower/deco/skyline"]);
+		city.setOrigin(0, 55);
+		for (int x = floor(rect.left / 96); x < ceil((rect.left+rect.width) / 96); x++) {
+			city.setPosition(x * 96, 0);
+			target.draw(city);
 			game->drawnSprites++;
 		}
 	}

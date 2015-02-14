@@ -19,6 +19,8 @@ namespace OT {
 
 		virtual void Render(sf::RenderTarget & target) const;
 
+		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
 	private:
 		struct FireStairPair {
 			Sprite minX;

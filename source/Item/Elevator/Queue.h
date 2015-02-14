@@ -18,6 +18,8 @@ namespace OT {
 				Queue(Elevator * e);
 				~Queue();
 				
+				void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
 				int floor;
 				Elevator::Direction direction;
 				int width;

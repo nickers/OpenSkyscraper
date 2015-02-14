@@ -31,8 +31,8 @@ void TimeWindowWatch::RenderElement(Rocket::Core::Element* element, Rocket::Core
 	
 	Vector2f offset = element->GetAbsoluteOffset();
 	Vector2f size   = element->GetBox().GetSize() / 2;
-	
-	double radius_m = std::min<float>(size.x, size.y);
+
+	double radius_m = std::fminf(size.x, size.y);
 	double radius_h = 0.6 * radius_m;
 	
 	double time    = element->GetAttribute<float>("time", 0);

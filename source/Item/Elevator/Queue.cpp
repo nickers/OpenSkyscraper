@@ -31,6 +31,11 @@ Queue::~Queue()
 	}
 }
 
+void Queue::draw(sf::RenderTarget& target, sf::RenderStates states) const 
+{
+	target.draw(*this, states);
+}
+
 /// Returns the absolute time that has passed since the elevator was called from this queue.
 double Queue::getWaitDuration()
 {
@@ -82,8 +87,11 @@ void Queue::Render(sf::RenderTarget & target) const
 	int x = 16;
 	
 	Sprite s;
-	s.SetImage(app->bitmaps["simtower/elevator/people"]);
-	s.SetCenter(direction == Elevator::kUp ? 16 : 0, 24);
+	sf::Texture t;
+	t.loadFromImage(app->bitmaps["simtower/elevator/people"]);
+	//s.SetImage(app->bitmaps["simtower/elevator/people"]);
+	s.setTexture(t);
+	s.setOrigin(direction == Elevator::kUp ? 16 : 0, 24);
 	
 	for (People::const_iterator ip = people.begin(); ip != people.end(); ip++) {
 		Person * p = *ip;
@@ -101,13 +109,15 @@ void Queue::Render(sf::RenderTarget & target) const
 		//Calculate the texture subrect for this person.
 		int type = p->type;
 		sf::IntRect sr;
-		sr.Left   = type * 32;
-		sr.Right  = sr.Left + 16;
-		sr.Top    = (stepping ? 48 : 0);
-		sr.Bottom = (stepping ? 72 : 24);
+		sr.left   = type * 32;
+		//sr.Right  = sr.Left + 16;
+		sr.width = 16;
+		sr.top    = (stepping ? 48 : 0);
+		//sr.Bottom = (stepping ? 72 : 24);
+		sr.height = 24;
 		if (direction == Elevator::kDown) {
-			sr.Left  += 16;
-			sr.Right += 16;
+			sr.left  += 16;
+			//sr.Right += 16;
 		}
 		
 		//Calculate the person's position.
@@ -121,10 +131,10 @@ void Queue::Render(sf::RenderTarget & target) const
 		else if (p->stress > 0.4) color = sf::Color(255, 128, 128);
 		
 		//Draw the person.
-		s.SetColor(color);
-		s.SetSubRect(sr);
-		s.SetPosition(pos);
-		target.Draw(s);
+		s.setColor(color);
+		s.setTextureRect(sr);
+		s.setPosition(pos);
+		target.draw(s);
 		
 		//Move the queue and abort if we've reached our max drawing width.
 		x += (stepping ? 16 : p->getWidth());

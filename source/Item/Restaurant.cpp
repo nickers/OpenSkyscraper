@@ -17,9 +17,13 @@ void Restaurant::init()
 	
 	variant = rand() % 4;
 	open = false;
-	
-	sprite.SetImage(App->bitmaps["simtower/restaurant"]);
-	sprite.SetCenter(0, 24);
+
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/restaurant"]);
+	sprite.setTexture(*t);
+
+	//sprite.SetImage(App->bitmaps["simtower/restaurant"]);
+	sprite.setOrigin(0, 24);
 	addSprite(&sprite);
 	spriteNeedsUpdate = false;
 	
@@ -46,8 +50,8 @@ void Restaurant::updateSprite()
 	spriteNeedsUpdate = false;
 	int index = 3;
 	if (open) index = std::min<int>((int)ceil(people.size() / 5.0f), 2);
-	sprite.SetSubRect(sf::IntRect(index*192, variant*24, (index+1)*192, (variant+1)*24));
-	sprite.Resize(192, 24);
+	sprite.setTextureRect(sf::IntRect(index*192, variant*24, (index+1)*192, (variant+1)*24));
+	//sprite.Resize(192, 24);
 }
 
 void Restaurant::advance(double dt)

@@ -7,11 +7,13 @@ namespace OT {
 	namespace Item {
 		namespace Elevator {
 			class Queue;
-			class Car : public GameObject, public sf::Drawable
+			class Car : public GameObject, public sf::Transformable, public sf::Drawable
 			{
 			public:
 				Elevator * const elevator;
 				Car(Elevator * elevator) : GameObject(elevator->game), elevator(elevator) { altitude = elevator->position.y; init(); }
+
+				virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 				
 				virtual void init();
 				

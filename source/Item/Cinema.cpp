@@ -20,10 +20,18 @@ void Cinema::init()
 	animation = 0;
 	animationFrame = 0;
 	
-	hallSprite.SetImage(App->bitmaps["simtower/cinema/hall"]);
-	hallSprite.SetCenter(-56, 60);
-	screenSprite.SetImage(App->bitmaps["simtower/cinema/screens"]);
-	screenSprite.SetCenter(0, 60);
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/cinema/hall"]);
+	hallSprite.setTexture(*t);
+
+	//hallSprite.SetImage(App->bitmaps["simtower/cinema/hall"]);
+	hallSprite.setOrigin(-56, 60);
+
+	t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/cinema/screens"]);
+	hallSprite.setTexture(*t);
+	//screenSprite.SetImage(App->bitmaps["simtower/cinema/screens"]);
+	screenSprite.setOrigin(0, 60);
 	addSprite(&hallSprite);
 	addSprite(&screenSprite);
 	spriteNeedsUpdate = false;
@@ -62,10 +70,10 @@ void Cinema::updateSprite()
 			screenIndex = hallIndex;
 		}
 	}
-	hallSprite.SetSubRect(sf::IntRect(hallIndex*192, 0, (hallIndex+1)*192, 60));
-	hallSprite.Resize(192, 60);
-	screenSprite.SetSubRect(sf::IntRect(screenIndex*56, 0, (screenIndex+1)*56, 60));
-	screenSprite.Resize(56, 60);
+	hallSprite.setTextureRect(sf::IntRect(hallIndex*192, 0, (hallIndex+1)*192, 60));
+	//hallSprite.Resize(192, 60);
+	screenSprite.setTextureRect(sf::IntRect(screenIndex*56, 0, (screenIndex+1)*56, 60));
+	//screenSprite.Resize(56, 60);
 }
 
 void Cinema::advance(double dt)

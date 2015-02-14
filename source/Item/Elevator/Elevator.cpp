@@ -24,13 +24,17 @@ void Elevator::init()
 	
 	animation = 0;
 	frame = 0;
+
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(app->bitmaps[shaftBitmap]);
+	shaft.setTexture(*t);
+
+	//shaft.SetImage(app->bitmaps[shaftBitmap]);
+	shaft.setTextureRect(sf::IntRect(0, 0, size.x*8, 36));
+	shaft.setOrigin(0, 36);
 	
-	shaft.SetImage(app->bitmaps[shaftBitmap]);
-	shaft.SetSubRect(sf::IntRect(0, 0, size.x*8, 36));
-	shaft.SetCenter(0, 36);
-	
-	topMotor.SetImage(*shaft.GetImage());
-	bottomMotor.SetImage(*shaft.GetImage());
+	topMotor.setTexture(*shaft.getTexture());
+	bottomMotor.setTexture(*shaft.getTexture());
 	
 	addSprite(&topMotor);
 	addSprite(&bottomMotor);
@@ -45,10 +49,11 @@ void Elevator::updateSprite()
 	int w = GetSize().x;
 	int h = GetSize().y;
 	
-	topMotor.SetSubRect   (sf::IntRect((2*frame+1)*w, 0, (2*frame+2)*w, 36));
-	bottomMotor.SetSubRect(sf::IntRect((2*frame+2)*w, 0, (2*frame+3)*w, 36));
-	topMotor.SetCenter(0, 36);
-	topMotor.SetY(-h);
+	topMotor.setTextureRect   (sf::IntRect((2*frame+1)*w, 0, (2*frame+2)*w, 36));
+	bottomMotor.setTextureRect(sf::IntRect((2*frame+2)*w, 0, (2*frame+3)*w, 36));
+	topMotor.setOrigin(0, 36);
+	//topMotor.SetY(-h);
+	topMotor.setPosition(topMotor.getPosition().x, -h);
 }
 
 void Elevator::Render(sf::RenderTarget & target) const
@@ -58,16 +63,21 @@ void Elevator::Render(sf::RenderTarget & target) const
 	//Draw the elevator floors.
 	Sprite s = shaft;
 	Sprite d;
-	d.SetImage(app->bitmaps["simtower/elevator/digits"]);
-	d.SetCenter(0, 17);
+	sf::Texture t;
+	t.loadFromImage(app->bitmaps["simtower/elevator/digits"]);
+	//d.SetImage(app->bitmaps["simtower/elevator/digits"]);
+	d.setTexture(t);
+	d.setOrigin(0, 17);
 	
 	int minY = 0;
 	int maxY = size.y-1;
 	
 	for (int y = minY; y <= maxY; y++) {
-		s.SetY(-y*36);
-		d.SetY(-y*36 - 3);
-		target.Draw(s);
+		//s.SetY(-y*36);
+		d.setPosition(d.getPosition().x, -y * 36);
+		//d.SetY(-y*36 - 3);
+		d.setPosition(d.getPosition().x, -y * 36 - 3);
+		target.draw(s);
 		
 		int flr = position.y + y;
 		if (!connectsFloor(flr)) continue;
@@ -78,16 +88,17 @@ void Elevator::Render(sf::RenderTarget & target) const
 		for (int i = 0; i < len; i++) {
 			int p = 10;
 			if (c[i] >= '0' && c[i] <= '9') p = c[i] - '0';
-			d.SetSubRect(sf::IntRect(p*11, 0, (p+1)*11, 17));
-			d.SetX(x);
-			target.Draw(d);
+			d.setTextureRect(sf::IntRect(p*11, 0, (p+1)*11, 17));
+			//d.SetX(x);
+			d.setPosition(x, d.getPosition().y);
+			target.draw(d);
 			x += 12;
 		}
 	}
 	
 	//Draw the cars and queues.
-	for (Cars::iterator c = cars.begin(); c != cars.end(); c++) target.Draw(**c);
-	for (Queues::iterator q = queues.begin(); q != queues.end(); q++) target.Draw(**q);
+	for (Cars::iterator c = cars.begin(); c != cars.end(); c++) target.draw(**c);
+	for (Queues::iterator q = queues.begin(); q != queues.end(); q++) target.draw(**q);
 }
 
 void Elevator::advance(double dt)
@@ -152,7 +163,7 @@ void Elevator::decodeXML(tinyxml2::XMLElement & xml)
 
 rectd Elevator::getMouseRegion()
 {
-	sf::Vector2f p = GetPosition();
+	sf::Vector2f p = getPosition();
 	sf::Vector2f s = GetSize();
 	return rectd(p.x, p.y - s.y - 36, s.x, s.y + 2*36);
 }

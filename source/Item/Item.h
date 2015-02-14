@@ -15,7 +15,7 @@
 namespace OT {
 	namespace Item {
 		
-		class Item : public GameObject, public sf::Drawable
+		class Item : public GameObject, public sf::Drawable, public sf::Transformable
 		{
 		public:
 			int layer;
@@ -33,6 +33,12 @@ namespace OT {
 			int2 size;
 			void setPosition(int2 p);
 			recti getRect() const { return recti(position, size); }
+
+			virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
+			{
+				target.draw(*this, states);
+			}
+
 			
 			virtual void Render(sf::RenderTarget & target) const;
 			sf::Vector2f GetSize() const { return sf::Vector2f(size.x*8.0f, size.y*36.0f); }

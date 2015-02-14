@@ -3,6 +3,7 @@
 #include "../Game.h"
 #include "../Math/Rand.h"
 #include "../Time.h"
+#include "../Person.h"
 
 using OT::Item::Office;
 using OT::Path;
@@ -27,8 +28,11 @@ void Office::init()
 	rent = 10000;
 	rentDeposit = rent;
 
-	sprite.SetImage(App->bitmaps["simtower/office"]);
-	sprite.SetCenter(0, 24);
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/office"]);
+	sprite.setTexture(*t);
+	//sprite.SetImage(App->bitmaps["simtower/office"]);
+	sprite.setOrigin(0, 24);
 	addSprite(&sprite);
 	spriteNeedsUpdate = false;
 
@@ -77,8 +81,8 @@ void Office::updateSprite()
 	spriteNeedsUpdate = false;
 	int index_x = (lit ? 0 : 1);
 	int index_y = (occupied ? variant : 6);
-	sprite.SetSubRect(sf::IntRect(index_x*72, index_y*24, (index_x+1)*72, (index_y+1)*24));
-	sprite.Resize(72, 24);
+	sprite.setTextureRect(sf::IntRect(index_x*72, index_y*24, (index_x+1)*72, (index_y+1)*24));
+	//sprite.Resize(72, 24);
 }
 
 void Office::advance(double dt)
@@ -191,28 +195,28 @@ bool Office::isAttractive()
 	return !lobbyRoute.empty();
 }
 
-void Office::addPerson(Person * p)
-{
-	Item::addPerson(p);
-
-	//Reduce the person's stress a bit, just for the time being.
-	p->stress *= 0.5;
-
-	// If this was a salesman, set a sales leave and return time for him.
-	if (p->type == Person::kSalesman) {
-		Worker *w = (Worker *)p;
-		if (w->leaveForSalesTime < 0) {
-			w->leaveForSalesTime = game->time.absolute + randd(0.01, 0.02);
-			LOG(DEBUG, "Salesman %p will leave at %f", w, w->leaveForSalesTime);
-			salesLeaveQueue.push(w);
-		}
-		if (w->returnFromSalesTime < 0) {
-			w->returnFromSalesTime = floor(game->time.absolute) + randd(Time::hourToAbsolute(13), Time::hourToAbsolute(15));
-			LOG(DEBUG, "Salesman %p will return at %f", w, w->returnFromSalesTime);
-			salesReturnQueue.push(w);
-		}
-	}
-}
+//void Office::addPerson(Person * p)
+//{
+//	Item::addPerson(p);
+//
+//	//Reduce the person's stress a bit, just for the time being.
+//	p->stress *= 0.5;
+//
+//	// If this was a salesman, set a sales leave and return time for him.
+//	if (p->type == Person::kSalesman) {
+//		Worker *w = (Worker *)p;
+//		if (w->leaveForSalesTime < 0) {
+//			w->leaveForSalesTime = game->time.absolute + randd(0.01, 0.02);
+//			LOG(DEBUG, "Salesman %p will leave at %f", w, w->leaveForSalesTime);
+//			salesLeaveQueue.push(w);
+//		}
+//		if (w->returnFromSalesTime < 0) {
+//			w->returnFromSalesTime = floor(game->time.absolute) + randd(Time::hourToAbsolute(13), Time::hourToAbsolute(15));
+//			LOG(DEBUG, "Salesman %p will return at %f", w, w->returnFromSalesTime);
+//			salesReturnQueue.push(w);
+//		}
+//	}
+//}
 
 Path Office::getRandomBackgroundSoundPath()
 {

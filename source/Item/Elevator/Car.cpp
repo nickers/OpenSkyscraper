@@ -14,12 +14,15 @@ const static double kUnmountPeriod = 0.05; //dito, but off the elevator
 
 void Car::init()
 {
-	sprite.SetImage(app->bitmaps[elevator->carBitmap]);
-	sprite.SetCenter(0, 30);
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(app->bitmaps[elevator->carBitmap]);
+	//sprite.SetImage(app->bitmaps[elevator->carBitmap]);
+	sprite.setTexture(*t);
+	sprite.setOrigin(0, 30);
 	updateSprite();
 	
-	arrivingSound.SetBuffer(app->sounds["simtower/elevator/arriving"]);
-	departingSound.SetBuffer(app->sounds["simtower/elevator/departing"]);
+	arrivingSound.setBuffer(app->sounds["simtower/elevator/arriving"]);
+	departingSound.setBuffer(app->sounds["simtower/elevator/departing"]);
 	arrivingPlayed = false;
 	departingPlayed = false;
 	
@@ -40,7 +43,7 @@ void Car::setAltitude(double a)
 
 void Car::reposition()
 {
-	SetPosition(0, -altitude * 36 - elevator->GetPosition().y);
+	setPosition(0, -altitude * 36 - elevator->getPosition().y);
 }
 
 void Car::updateSprite()
@@ -52,40 +55,48 @@ void Car::updateSprite()
 	else if (pc <= 3) index = 2;
 	else if (pc == elevator->maxCarCapacity) index = 4;
 	
-	int w = sprite.GetImage()->GetWidth() / 5;
-	int h = sprite.GetImage()->GetHeight();
-	sprite.SetSubRect(sf::IntRect(index*w, 0, (index+1)*w, h));
-	sprite.SetPosition(sf::Vector2f(2, 0));
+	int w = sprite.getTexture()->getSize().x / 5;
+	int h = sprite.getTexture()->getSize().y;
+	sprite.setTextureRect(sf::IntRect(index*w, 0, (index+1)*w, h));
+	sprite.setPosition(sf::Vector2f(2, 0));
+}
+
+void Car::draw(sf::RenderTarget& target, sf::RenderStates states) const 
+{
+	target.draw(*this, states);
 }
 
 void Car::Render(sf::RenderTarget & target) const
 {
-	target.Draw(sprite);
+	target.draw(sprite);
 
 	//Draw the people stepping out of the elevator.
 	Person *p = NULL;
 	if (state == kHauling && (p = nextPassengerToUnmount())) {
 		Sprite s;
-		s.SetImage(app->bitmaps["simtower/elevator/people"]);
-		s.SetCenter(direction == Elevator::kUp ? -elevator->shaft.GetSize().x : 16, 24);
+		sf::Texture *t = new sf::Texture();
+		t->loadFromImage(app->bitmaps["simtower/elevator/people"]);
+		s.setTexture(*t);
+		//s.SetImage(app->bitmaps["simtower/elevator/people"]);
+		s.setOrigin(direction == Elevator::kUp ? -(elevator->shaft.getLocalBounds().width) : 16, 24);
+		//s.setOrigin(direction == Elevator::kUp ? -elevator->shaft.GetSize().x : 16, 24);
 
 		//Calculate the texture subrect for the person stepping out of the car.
 		int type = p->type;
 		sf::IntRect sr;
-		sr.Left   = type * 32;
-		sr.Right  = sr.Left + 16;
-		sr.Top    = 24;
-		sr.Bottom = 48;
+		sr.left   = type * 32;
+		sr.width  = 16;
+		sr.top    = 24;
+		sr.height = 48-24;
 		if (direction == Elevator::kUp) {
-			sr.Left  += 16;
-			sr.Right += 16;
+			sr.left  += 16;
 		}
 		
 		//Draw the person.
-		s.SetColor(sf::Color::Black);
-		s.SetSubRect(sr);
-		s.SetPosition(elevator->shaft.GetPosition().x, sprite.GetPosition().y);
-		target.Draw(s);
+		s.setColor(sf::Color::Black);
+		s.setTextureRect(sr);
+		s.setPosition(elevator->shaft.getPosition().x, sprite.getPosition().y);
+		target.draw(s);
 	}
 }
 

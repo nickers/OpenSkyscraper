@@ -5,6 +5,7 @@
 
 #ifdef _WIN32
 #include "Math/Round.h"
+#include <gl/GL.h>
 #endif
 
 using namespace OT;
@@ -56,10 +57,10 @@ Game::Game(Application & app)
 	
 	reloadGUI();
 	
-	cockSound.SetBuffer(app.sounds["simtower/cock"]);
-	morningSound.SetBuffer(app.sounds["simtower/birds/morning"]);
-	bellsSound.SetBuffer(app.sounds["simtower/bells"]);
-	eveningSound.SetBuffer(app.sounds["simtower/birds/evening"]);
+	cockSound.setBuffer(app.sounds["simtower/cock"]);
+	morningSound.setBuffer(app.sounds["simtower/birds/morning"]);
+	bellsSound.setBuffer(app.sounds["simtower/bells"]);
+	eveningSound.setBuffer(app.sounds["simtower/birds/evening"]);
 	
 	//DEBUG: load from disk.
 	tinyxml2::XMLDocument xml;
@@ -91,28 +92,28 @@ void Game::deactivate()
 
 bool Game::handleEvent(sf::Event & event)
 {
-	switch (event.Type) {
+	switch (event.type) {
 		case sf::Event::KeyPressed: {
-			switch (event.Key.Code) {
-				case sf::Key::Left:  poi.x -= 20; return true;
-				case sf::Key::Right: poi.x += 20; return true;
-				case sf::Key::Up:    poi.y += 20; return true;
-				case sf::Key::Down:  poi.y -= 20; return true;
-				case sf::Key::F1:    reloadGUI(); return true;
-				case sf::Key::F3:    setRating(1); return true;
-				case sf::Key::F2: {
+			switch (event.key.code) {
+				case sf::Keyboard::Left:  poi.x -= 20; return true;
+				case sf::Keyboard::Right: poi.x += 20; return true;
+				case sf::Keyboard::Up:    poi.y += 20; return true;
+				case sf::Keyboard::Down:  poi.y -= 20; return true;
+				case sf::Keyboard::F1:    reloadGUI(); return true;
+				case sf::Keyboard::F3:    setRating(1); return true;
+				case sf::Keyboard::F2: {
 					FILE * f = fopen("default.tower", "w");
 					tinyxml2::XMLPrinter xml(f);
 					encodeXML(xml);
 					fclose(f);
 				} return true;
-				case sf::Key::PageUp:   zoom /= 2; return true;
-				case sf::Key::PageDown: zoom *= 2; return true;
+				case sf::Keyboard::PageUp:   zoom /= 2; return true;
+				case sf::Keyboard::PageDown: zoom *= 2; return true;
 			}
 		} break;
 		
 		case sf::Event::TextEntered: {
-			switch (event.Text.Unicode) {
+			switch (event.text.unicode) {
 				case '0': setSpeedMode(0); return true;
 				case '1': setSpeedMode(1); return true;
 				case '2': setSpeedMode(2); return true;
@@ -121,7 +122,7 @@ bool Game::handleEvent(sf::Event & event)
 		} break;
 		
 		case sf::Event::MouseButtonPressed: {
-			float2 mousePoint(event.MouseButton.X, event.MouseButton.Y);
+			float2 mousePoint(event.mouseButton.x, event.mouseButton.y);
 			rectf toolboxWindowRect(float2(toolboxWindow.window->GetAbsoluteLeft(), toolboxWindow.window->GetAbsoluteTop()), float2(toolboxWindow.window->GetClientWidth(), toolboxWindow.window->GetClientHeight()));
 			rectf timeWindowRect(float2(timeWindow.window->GetAbsoluteLeft(), timeWindow.window->GetAbsoluteTop()), float2(timeWindow.window->GetClientWidth(), timeWindow.window->GetClientHeight()));
 			rectf mapWindowRect(float2(mapWindow->GetAbsoluteLeft(), mapWindow->GetAbsoluteTop()), float2(mapWindow->GetClientWidth(), mapWindow->GetClientHeight()));
@@ -502,26 +503,28 @@ void Game::advance(double dt)
 	if (time.checkHour(6))  morningSound.Play(this);
 	if (time.checkHour(9))  bellsSound.Play(this);
 	if (time.checkHour(18)) eveningSound.Play(this);
-	morningSound.SetLoop(time.hour < 8);
+	morningSound.setLoop(time.hour < 8);
 	
 	//Constrain the POI.
-	double2 halfsize(win.GetWidth()*0.5*zoom, win.GetHeight()*0.5*zoom);
+	double2 halfsize(win.getSize().x*0.5*zoom, win.getSize().y*0.5*zoom);
 	poi.y = std::max<double>(std::min<double>(poi.y, 360*12 - halfsize.y), -360 + halfsize.y);
 	
 	//Adust the camera.
 	sf::FloatRect view;
-	view.Left   = round(poi.x - halfsize.x);
-	view.Top    = round(-poi.y - halfsize.y);
-	view.Right  = view.Left + halfsize.x*2;
-	view.Bottom = view.Top + halfsize.y*2;
+	view.left   = round(poi.x - halfsize.x);
+	view.top    = round(-poi.y - halfsize.y);
+	view.width  = halfsize.x*2;
+	view.height = halfsize.y*2;
 	sf::View cameraView(view);
-	win.SetView(cameraView);
+	win.setView(cameraView);
 	//sf::FloatRect view = cameraView.GetRect();
 	//win.SetView(sf::View(view));
 	
 	//Prepare the current tool.
-	const sf::Input & input = win.GetInput();
-	sf::Vector2f mp = win.ConvertCoords(input.GetMouseX(), input.GetMouseY());
+	/*const sf::Input & input = win.GetInput();
+	sf::Vector2f mp = win.ConvertCoords(input.GetMouseX(), input.GetMouseY());*/
+	sf::Vector2i mpos = sf::Mouse::getPosition(win);
+	sf::Vector2f mp(mpos);
 	Item::AbstractPrototype * previousPrototype = toolPrototype;
 	if (selectedTool.find("item-") == 0) {
 		toolPrototype = itemFactory.prototypesById[selectedTool.substr(5)];
@@ -533,8 +536,8 @@ void Game::advance(double dt)
 	if (previousPrototype != toolPrototype) timeWindow.updateTooltip();
 	
 	//Draw the sky and decorations.
-	win.Draw(sky);
-	win.Draw(decorations);
+	win.draw(sky);
+	win.draw(decorations);
 	
 	//Draw the items that are in view.
 	Item::Item * previousItemBelowCursor = itemBelowCursor;
@@ -542,10 +545,10 @@ void Game::advance(double dt)
 
 	//Draw floor items first
 	for (ItemSet::iterator i = itemsByType["floor"].begin(); i != itemsByType["floor"].end(); i++) {
-		const sf::Vector2f & vp = (*i)->GetPosition();
+		const sf::Vector2f & vp = (*i)->getPosition();
 		const sf::Vector2f & vs = (*i)->GetSize();
-		if (vp.x+vs.x >= view.Left && vp.x <= view.Right && vp.y >= view.Top && vp.y-vs.y <= view.Bottom) {
-			win.Draw(**i);
+		if (vp.x + vs.x >= view.left && vp.x <= (view.left + view.width) && vp.y >= view.top && vp.y - vs.y <= (view.top + view.height)) {
+			win.draw(**i);
 			if ((*i)->getMouseRegion().containsPoint(double2(mp.x, mp.y))) itemBelowCursor = *i;
 		}
 	}
@@ -554,10 +557,10 @@ void Game::advance(double dt)
 	for (int layer = 0; layer < 2; layer++) {
 		for (ItemSet::iterator i = items.begin(); i != items.end(); i++) {
 			if ((*i)->layer != layer) continue;
-			const sf::Vector2f & vp = (*i)->GetPosition();
+			const sf::Vector2f & vp = (*i)->getPosition();
 			const sf::Vector2f & vs = (*i)->GetSize();
-			if (vp.x+vs.x >= view.Left && vp.x <= view.Right && vp.y >= view.Top && vp.y-vs.y <= view.Bottom) {
-				win.Draw(**i);
+			if (vp.x + vs.x >= view.left && vp.x <= (view.left+view.width) && vp.y >= view.top && vp.y - vs.y <= (view.top + view.height)) {
+				win.draw(**i);
 				if ((*i)->getMouseRegion().containsPoint(double2(mp.x, mp.y))) itemBelowCursor = *i;
 			}
 		}
@@ -566,11 +569,11 @@ void Game::advance(double dt)
 	//Highlight the item below the cursor.
 	if (!toolPrototype && itemBelowCursor) {
 		sf::Sprite s;
-		s.Resize(itemBelowCursor->GetSize().x, itemBelowCursor->GetSize().y-12);
-		s.SetCenter(0, 1);
-		s.SetPosition(itemBelowCursor->GetPosition());
-		s.SetColor(sf::Color(255, 255, 255, 255*0.5));
-		win.Draw(s);
+		////TODO FIXME////s.Resize(itemBelowCursor->GetSize().x, itemBelowCursor->GetSize().y-12);
+		s.setOrigin(0, 1);
+		s.setPosition(itemBelowCursor->getPosition());
+		s.setColor(sf::Color(255, 255, 255, 255*0.5));
+		win.draw(s);
 		drawnSprites++;
 		if (previousItemBelowCursor != itemBelowCursor) {
 			timeWindow.showMessage(itemBelowCursor->prototype->name);
@@ -616,17 +619,17 @@ void Game::advance(double dt)
 	
 	//Adjust pitch of playing sounds.
 	for (SoundSet::iterator s = playingSounds.begin(); s != playingSounds.end();) {
-		if ((*s)->GetStatus() == sf::Sound::Stopped) {
+		if ((*s)->getStatus() == sf::Sound::Stopped) {
 			playingSounds.erase(s++);
 		} else {
-			(*s)->SetPitch(1 + (time.speed_animated-1) * 0.2);
+			(*s)->setPitch(1 + (time.speed_animated-1) * 0.2);
 			s++;
 		}
 	}
 	
 	//Autorelease sounds.
 	for (SoundSet::iterator s = autoreleaseSounds.begin(); s != autoreleaseSounds.end();) {
-		if ((*s)->GetStatus() == sf::Sound::Stopped) {
+		if ((*s)->getStatus() == sf::Sound::Stopped) {
 			delete *s;
 			autoreleaseSounds.erase(s++);
 		} else {
@@ -938,7 +941,7 @@ void Game::playOnce(Path sound)
 
 	//Actually play the sound.
 	Sound * snd = new Sound;
-	snd->SetBuffer(app.sounds[sound]);
+	snd->setBuffer(app.sounds[sound]);
 	snd->Play(this);
 	autoreleaseSounds.insert(snd);
 }
@@ -948,10 +951,10 @@ void Game::playOnce(Path sound)
 void Game::playRandomBackgroundSound()
 {
 	sf::RenderWindow &win = app.window;
-	sf::FloatRect view = win.GetView().GetRect();
+	sf::FloatRect view = win.getView().getViewport();
 
 	//Pick a random value between 0 and the screen area.
-	double r = (double)rand() / RAND_MAX * (view.Right-view.Left) * (view.Bottom-view.Top);
+	double r = (double)rand() / RAND_MAX * (view.width) * (view.height);
 
 	//Iterate through the items that are in view, subtracting each item's area from the random
 	//value until it drops below 0. That item will be given the chance to play the sound. This
@@ -959,9 +962,9 @@ void Game::playRandomBackgroundSound()
 	Item::Item *pick = NULL;
 	for (ItemSet::iterator i = items.begin(); i != items.end(); i++) {
 		if ((*i)->layer != 0) continue;
-		const sf::Vector2f & vp = (*i)->GetPosition();
+		const sf::Vector2f & vp = (*i)->getPosition();
 		const sf::Vector2f & vs = (*i)->GetSize();
-		if (vp.x+vs.x >= view.Left && vp.x <= view.Right && vp.y >= view.Top && vp.y-vs.y <= view.Bottom) {
+		if (vp.x + vs.x >= view.left && vp.x <= (view.left + view.width) && vp.y >= view.top && vp.y - vs.y <= (view.top + view.height)) {
 			int area = vs.x * vs.y;
 			r -= area;
 			if (r <= 0) {

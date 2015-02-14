@@ -15,6 +15,8 @@ set(FIND_ROCKET_PATHS
 	${ROCKETDIR}
 	#/usr/local
 	#/usr
+	C:/Users/2nick_000/Workspace/libRocket/sdk/Release
+	C:/Users/2nick_000/Workspace/libRocket
 	/sw
 	/opt/local
 	/opt/csw
@@ -29,6 +31,7 @@ find_path(
 	
 )
 if (ROCKET_INCLUDE_DIR)
+	message(tutaj)
 	set(ROCKET_FOUND TRUE)
 endif()
 
@@ -95,6 +98,8 @@ foreach (component ${Rocket_FIND_COMPONENTS})
 	# add to the list of libraries
 	set(ROCKET_LIBRARIES ${ROCKET_LIBRARIES} "${ROCKET_${component_upper}_LIBRARY}")
 endforeach()
+
+
 
 # handle errors
 if (NOT ROCKET_FOUND)

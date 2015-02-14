@@ -21,6 +21,11 @@ namespace OT {
 
 		void advance(double dt);
 		virtual void Render(sf::RenderTarget & target) const;
+
+		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
+		{
+			target.draw(*this, states);
+		}
 		
 		static double cloudNoise(double2 p);
 		

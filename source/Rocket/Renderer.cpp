@@ -88,7 +88,7 @@ sf::RenderWindow * RocketRenderer::GetWindow()
 // Called by Rocket when it wants to render geometry that it does not wish to optimise.
 void RocketRenderer::RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, const Rocket::Core::TextureHandle texture, const Rocket::Core::Vector2f& translation)
 {
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
 	glPushMatrix();
 	glTranslatef(translation.x, translation.y, 0);
@@ -119,7 +119,8 @@ void RocketRenderer::RenderGeometry(Rocket::Core::Vertex* vertices, int num_vert
 
 	if(image)
 	{
-		image->Bind();
+		//// TODO anything here?
+		////image->bind();
 	}
 	else
 	{
@@ -145,7 +146,7 @@ Rocket::Core::CompiledGeometryHandle RocketRenderer::CompileGeometry(Rocket::Cor
 																		   const Rocket::Core::TextureHandle texture)
 {
 #ifdef ENABLE_GLEE
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
 	if(!GLEE_VERSION_2_0)
 		return (Rocket::Core::CompiledGeometryHandle) NULL;
@@ -186,7 +187,7 @@ Rocket::Core::CompiledGeometryHandle RocketRenderer::CompileGeometry(Rocket::Cor
 void RocketRenderer::RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry, const Rocket::Core::Vector2f& translation)
 {
 #ifdef ENABLE_GLEE
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
 	RocketRendererGeometryHandler *RealGeometry = (RocketRendererGeometryHandler *)geometry;
 
@@ -238,7 +239,7 @@ void RocketRenderer::RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle
 void RocketRenderer::ReleaseCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry)
 {
 #ifdef ENABLE_GLEE
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
 	delete (RocketRendererGeometryHandler *)geometry;
 #else
@@ -249,7 +250,7 @@ void RocketRenderer::ReleaseCompiledGeometry(Rocket::Core::CompiledGeometryHandl
 // Called by Rocket when it wants to enable or disable scissoring to clip content.		
 void RocketRenderer::EnableScissorRegion(bool enable)
 {
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
 	if (enable)
 		glEnable(GL_SCISSOR_TEST);
@@ -260,15 +261,15 @@ void RocketRenderer::EnableScissorRegion(bool enable)
 // Called by Rocket when it wants to change the scissor region.		
 void RocketRenderer::SetScissorRegion(int x, int y, int width, int height)
 {
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
-	glScissor(x, MyWindow->GetHeight() - (y + height), width, height);
+	glScissor(x, MyWindow->getSize().y - (y + height), width, height);
 }
 
 // Called by Rocket when a texture is required by the library.		
 bool RocketRenderer::LoadTexture(Rocket::Core::TextureHandle& texture_handle, Rocket::Core::Vector2i& texture_dimensions, const Rocket::Core::String& source)
 {
-	MyWindow->SetActive();
+	MyWindow->setActive();
 	
 	printf("-> LOADING TEXTURE %s\n", source.CString());
 	
@@ -298,7 +299,7 @@ bool RocketRenderer::LoadTexture(Rocket::Core::TextureHandle& texture_handle, Ro
 	sf::Image * image = &App->bitmaps[source.CString()];
 
 	texture_handle = (Rocket::Core::TextureHandle) image;
-	texture_dimensions = Rocket::Core::Vector2i(image->GetWidth(), image->GetHeight());
+	texture_dimensions = Rocket::Core::Vector2i(image->getSize().x, image->getSize().y);
 
 	return true;
 }
@@ -306,16 +307,17 @@ bool RocketRenderer::LoadTexture(Rocket::Core::TextureHandle& texture_handle, Ro
 // Called by Rocket when a texture is required to be built from an internally-generated sequence of pixels.
 bool RocketRenderer::GenerateTexture(Rocket::Core::TextureHandle& texture_handle, const Rocket::Core::byte* source, const Rocket::Core::Vector2i& source_dimensions)
 {
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
 	sf::Image *image = new sf::Image();
 
-	if(!image->LoadFromPixels(source_dimensions.x, source_dimensions.y, source))
+	/*if(!image->LoadFromPixels(source_dimensions.x, source_dimensions.y, source))
 	{
 		delete image;
 
 		return false;
-	};
+	};*/
+	image->create(source_dimensions.x, source_dimensions.y, source);
 
 	texture_handle = (Rocket::Core::TextureHandle)image;
 
@@ -325,7 +327,7 @@ bool RocketRenderer::GenerateTexture(Rocket::Core::TextureHandle& texture_handle
 // Called by Rocket when a loaded texture is no longer required.		
 void RocketRenderer::ReleaseTexture(Rocket::Core::TextureHandle texture_handle)
 {
-	MyWindow->SetActive();
+	MyWindow->setActive();
 
 	delete (sf::Image *)texture_handle;
 }

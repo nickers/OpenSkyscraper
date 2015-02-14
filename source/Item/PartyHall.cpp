@@ -15,9 +15,11 @@ void PartyHall::init()
 	Item::init();
 	
 	open = false;
-	
-	sprite.SetImage(App->bitmaps["simtower/partyhall"]);
-	sprite.SetCenter(0, 60);
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/partyhall"]);
+	sprite.setTexture(*t);
+	//sprite.SetImage(App->bitmaps["simtower/partyhall"]);
+	sprite.setOrigin(0, 60);
 	addSprite(&sprite);
 	spriteNeedsUpdate = false;
 	
@@ -41,8 +43,8 @@ void PartyHall::updateSprite()
 {
 	spriteNeedsUpdate = false;
 	int index = (open ? 1 : 0);
-	sprite.SetSubRect(sf::IntRect(index*192, 0, (index+1)*192, 60));
-	sprite.Resize(192, 60);
+	sprite.setTextureRect(sf::IntRect(index*192, 0, (index+1)*192, 60));
+	//sprite.Resize(192, 60);
 }
 
 void PartyHall::advance(double dt)

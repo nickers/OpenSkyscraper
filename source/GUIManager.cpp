@@ -36,7 +36,7 @@ bool GUIManager::init(sf::RenderWindow * window)
 	return true;
 }
 
-Rocket::Core::Input::KeyIdentifier GUIManager::translateKey(sf::Key::Code key)
+Rocket::Core::Input::KeyIdentifier GUIManager::translateKey(sf::Keyboard::Key key)
 {
 	return system.TranslateKey(key);
 }

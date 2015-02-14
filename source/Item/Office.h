@@ -1,6 +1,7 @@
 /* Copyright © 2013 Fabian Schuiki */
 #pragma once
 #include "Item.h"
+#include "..\Person.h"
 #include <set>
 
 namespace OT {
@@ -36,7 +37,7 @@ namespace OT {
 			virtual void advance(double dt);
 			bool isAttractive();
 
-			virtual void addPerson(Person * p);
+			//virtual void addPerson(Person * p);
 
 			Path getRandomBackgroundSoundPath();
 

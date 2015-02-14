@@ -14,15 +14,21 @@ void Floor::init()
 	
 	layer = -1;
 	
-	background.SetImage(App->bitmaps["simtower/floor"]);
-	background.SetSubRect(sf::IntRect(0, 0, 8, 36));
-	background.SetCenter(0, 36);
-	background.Resize(0, 36);
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/floor"]);
+	background.setTexture(*t);
+	//background.SetImage(App->bitmaps["simtower/floor"]);
+	background.setTextureRect(sf::IntRect(0, 0, 8, 36));
+	background.setOrigin(0, 36);
+	//background.Resize(0, 36);
 
-	ceiling.SetImage(App->bitmaps["simtower/floor"]);
-	ceiling.SetSubRect(sf::IntRect(0, 0, 8, 12));
-	ceiling.Resize(0, 12);
-	ceiling.SetPosition(0, -GetSize().y);
+	//ceiling.SetImage(App->bitmaps["simtower/floor"]);
+	t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/floor"]);
+	ceiling.setTexture(*t);
+	ceiling.setTextureRect(sf::IntRect(0, 0, 8, 12));
+	//ceiling.Resize(0, 12);
+	ceiling.setPosition(0, -GetSize().y);
 
 	interval.insert(position.x);
 	interval.insert(getRect().maxX());
@@ -61,9 +67,10 @@ void Floor::Render(sf::RenderTarget & target) const
 			right = *i;
 			if(left == right) continue;
 
-			b.Resize((right - left) * 8.0f, 36.0f);
-			b.SetX((left - position.x) * 8.0f);
-			target.Draw(b);
+			////b.Resize((right - left) * 8.0f, 36.0f);
+			//b.SetX((left - position.x) * 8.0f);
+			b.setPosition((left - position.x) * 8.0f, b.getPosition().y);
+			target.draw(b);
 		} else {
 			// Draw only ceiling sprite
 			drawBackground = true;
@@ -72,9 +79,10 @@ void Floor::Render(sf::RenderTarget & target) const
 			right = *i;
 			if(left == right) continue;
 
-			c.Resize((right - left) * 8.0f, 12.0f);
-			c.SetX((left - position.x) * 8.0f);
-			target.Draw(c);
+			//c.Resize((right - left) * 8.0f, 12.0f);
+			//c.SetX((left - position.x) * 8.0f);
+			c.setPosition((left - position.x) * 8.0f, c.getPosition().y);
+			target.draw(c);
 		}
 
 		game->drawnSprites++;

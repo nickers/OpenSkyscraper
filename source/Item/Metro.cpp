@@ -16,11 +16,15 @@ void Metro::init()
 	
 	open = true;
 	trainPresent = true;
-	
-	station.SetImage(App->bitmaps["simtower/metro/station"]);
-	station.SetCenter(0, 96);
-	platform.SetImage(App->bitmaps["simtower/metro/station"]);
-	platform.SetCenter(0, 30);
+
+	sf::Texture *t = new sf::Texture();
+	t->loadFromImage(App->bitmaps["simtower/metro/station"]);
+	station.setTexture(*t);
+	//station.SetImage(App->bitmaps["simtower/metro/station"]);
+	station.setOrigin(0, 96);
+	//platform.SetImage(App->bitmaps["simtower/metro/station"]);
+	platform.setTexture(*t);
+	platform.setOrigin(0, 30);
 	addSprite(&station);
 	addSprite(&platform);
 	spriteNeedsUpdate = true;
@@ -55,11 +59,11 @@ void Metro::updateSprite()
 		platformIndex = (trainPresent ? 0 : 1);
 	}
 
-	station.SetSubRect(sf::IntRect(stationIndex*240, 0, (stationIndex+1)*240, 66));
-	station.Resize(240, 66);
+	station.setTextureRect(sf::IntRect(stationIndex*240, 0, (stationIndex+1)*240, 66));
+	//station.Resize(240, 66);
 
-	platform.SetSubRect(sf::IntRect(platformIndex*240, 66, (platformIndex+1)*240, 96));
-	platform.Resize(240, 30);
+	platform.setTextureRect(sf::IntRect(platformIndex*240, 66, (platformIndex+1)*240, 96));
+	//platform.Resize(240, 30);
 }
 
 void Metro::advance(double dt)

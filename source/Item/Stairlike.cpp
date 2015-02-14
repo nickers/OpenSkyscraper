@@ -49,12 +49,12 @@ void Stairlike::advance(double dt)
 
 void Stairlike::updateSprite()
 {
-	int w = sprite.GetImage()->GetWidth() / frameCount;
-	int h = sprite.GetImage()->GetHeight();
+	int w = sprite.getTexture()->getSize().x / frameCount;
+	int h = sprite.getTexture()->getSize().y;
 	
-	sprite.SetCenter(0, h);
-	sprite.SetSubRect(sf::IntRect(w*frame, 0, w*(frame+1), h));
-	sprite.Resize(w, h);
+	sprite.setOrigin(0, h);
+	sprite.setTextureRect(sf::IntRect(w*frame, 0, w*(frame+1), h));
+	//sprite.Resize(w, h);
 }
 
 bool Stairlike::connectsFloor(int floor) const

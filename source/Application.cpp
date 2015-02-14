@@ -131,11 +131,11 @@ void Application::init()
 	delete simtower; simtower = NULL;
 	//exitCode = 1;
 	
-	videoMode.Width        = 1280;
-	videoMode.Height       = 768;
-	videoMode.BitsPerPixel = 32;
+	videoMode.width        = 1280;
+	videoMode.height       = 768;
+	videoMode.bitsPerPixel = 32;
 	
-	window.Create(videoMode, "OpenSkyscraper SFML");
+	window.create(videoMode, "OpenSkyscraper SFML");
 	
 	if (!gui.init(&window)) {
 		LOG(ERROR, "unable to initialize gui");
@@ -174,15 +174,15 @@ void Application::init()
 void Application::loop()
 {
 	sf::Clock clock;
-	sf::String rateIndicator("<not available>", fonts["UbuntuMono-Regular.ttf"], 16);
+	sf::Text rateIndicator("<not available>" , fonts["UbuntuMono-Regular.ttf"], 16);
 	double rateIndicatorTimer = 0;
 	double rateDamped = 0;
 	double rateDampFactor = 0;
 	double dt_max = 0, dt_min = 0;
 	int dt_maxmin_resetTimer = 0;
 	
-	while (window.IsOpened() && exitCode == 0 && !states.empty()) {
-		double dt_real = clock.GetElapsedTime();
+	while (window.isOpen() && exitCode == 0 && !states.empty()) {
+		double dt_real = clock.getElapsedTime().asSeconds();
 		//dt_max = (dt_max + dt_real * dt_real * 0.5) / (1 + dt_real * 0.5);
 		//dt_min = (dt_min + dt_real * dt_real * 0.5) / (1 + dt_real * 0.5);
 		if (dt_real > dt_max) {
@@ -194,7 +194,7 @@ void Application::loop()
 			dt_maxmin_resetTimer = 0;
 		}
 		double dt = std::min<double>(dt_real, 0.1); //avoids FPS dropping below 10 Hz
-		clock.Reset();
+		clock.restart();
 		
 		//Update the rate indicator.
 		rateDampFactor = (dt_real * 1);
@@ -210,17 +210,18 @@ void Application::loop()
 		
 		//Handle events.
 		sf::Event event;
-		while (window.GetEvent(event)) {
-			if (event.Type == sf::Event::Resized) {
-				LOG(INFO, "resized (%i, %i)", window.GetWidth(), window.GetHeight());
-				window.GetDefaultView().SetFromRect(sf::FloatRect(0, 0, window.GetWidth(), window.GetHeight()));
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Resized) {
+				LOG(INFO, "resized (%i, %i)", window.getViewport(window.getView()).width, window.getViewport(window.getView()).height);
+				auto view = window.getDefaultView();
+				view.setViewport(sf::FloatRect(0, 0, window.getViewport(window.getView()).width, window.getViewport(window.getView()).height));
 			}
-			if (event.Type == sf::Event::KeyPressed) {
-				if (event.Key.Code == sf::Key::Escape) {
+			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::Escape) {
 					exitCode = 1;
 					continue;
 				}
-				if (event.Key.Code == sf::Key::R && event.Key.Control) {
+				if (event.key.code == sf::Keyboard::R && event.key.control) {
 					LOG(IMPORTANT, "reinitializing game");
 					Game * old = (Game *)states.top();
 					popState();
@@ -230,7 +231,7 @@ void Application::loop()
 					continue;
 				}
 #ifdef BUILD_DEBUG
-				if (event.Key.Code == sf::Key::F8) {
+				if (event.key.code == sf::Keyboard::F8) {
 					bool visible = !Rocket::Debugger::IsVisible();
 					LOG(DEBUG, "Rocket::Debugger %s", (visible ? "on" : "off"));
 					Rocket::Debugger::SetVisible(visible);
@@ -244,7 +245,7 @@ void Application::loop()
 				if (states.top()->gui.handleEvent(event))
 					continue;
 			}
-			if (event.Type == sf::Event::Closed) {
+			if (event.type == sf::Event::Closed) {
 				LOG(WARNING, "current state did not handle sf::Event::Closed");
 				exitCode = 1;
 				continue;
@@ -265,16 +266,19 @@ void Application::loop()
 			strcat(dbg, "\n");
 			strcat(dbg, states.top()->debugString);
 		}
-		rateIndicator.SetText(dbg);
+		rateIndicator.setString(dbg);
 		
-		window.SetView(window.GetDefaultView());
-		sf::FloatRect r = rateIndicator.GetRect();
-		sf::Shape bg = sf::Shape::Rectangle(r.Left, r.Top, r.Right, r.Bottom, sf::Color(0, 0, 0, 0.25*255));
-		window.Draw(bg);
-		window.Draw(rateIndicator);
+		window.setView(window.getDefaultView());
+		sf::FloatRect r = rateIndicator.getGlobalBounds();
+		//sf::Shape bg = sf::RectangleShape(r.left, r.top, r.left+r.width, r.top+r.width, sf::Color(0, 0, 0, 0.25*255));
+		auto bg = sf::RectangleShape();
+		bg.setPosition(r.left, r.top);
+		bg.setSize(sf::Vector2f(r.width, r.height));
+		window.draw(bg);
+		window.draw(rateIndicator);
 		
 		//Swap buffers.
-		window.Display();
+		window.display();
 	}
 }
 
@@ -284,7 +288,7 @@ void Application::cleanup()
 		popState();
 	}
 	
-	window.Close();
+	window.close();
 }
 
 /** Pushes the given State ontop of the state stack, causing it to receive events. */

@@ -1,4 +1,4 @@
-#include <cassert>
+//#include <cassert>
 #include <Rocket/Core/Element.h>
 #include <sstream>
 #include "Game.h"
@@ -24,11 +24,11 @@ void TimeWindow::reload()
 	close();
 	
 	window = game->gui.loadDocument("time.rml");
-	assert(window);
+	//assert(window);
 	window->Show();
 	
 	ratingDiv     = window->GetElementById("rating");
-	assert(ratingDiv);
+	//assert(ratingDiv);
 	
 	std::string style;
 	for (int i = 0; i < 6; i++) {
@@ -81,7 +81,7 @@ void TimeWindow::updateRating()
 void TimeWindow::updateFunds()
 {
 	Rocket::Core::Element * e = window->GetElementById("funds");
-	assert(e);
+	//assert(e);
 	e->SetInnerRML(formatMoney(game->funds).c_str());
 }
 
@@ -91,7 +91,7 @@ void TimeWindow::updatePopulation()
 	snprintf(c, 32, "%i", game->population);
 	
 	Rocket::Core::Element * e = window->GetElementById("population");
-	assert(e);
+	//assert(e);
 	e->SetInnerRML(c);
 }
 
